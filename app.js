@@ -6,7 +6,7 @@ var builder = require('botbuilder');
 // import the REST library so that the bot can listen for messages
 var restify = require('restify');
 var databaseUtilities = require('./databaseUtilities.js');
-var calendarUtilities = require('./CalendarUtilities.js');
+var calendarUtilities = require('./calendarUtilities.js');
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -163,6 +163,81 @@ bot.dialog('getDate', function (session, args) {
 }).triggerAction({
     // map this dialog to the getDate intent 
     matches: 'getDate'
+});
+
+
+
+// dialog to process addToDo intent
+bot.dialog('addToDo',  [
+    // Step 1 - Ask what they want to add
+    function (session) {
+        builder.Prompts.text(session, 'Sure! What is your name?');
+    },
+    // Step 2 - Get the user's name
+    function (session, results) {
+        session.userData.userName = results.response;
+        builder.Prompts.text(session, "Ok " + session.userData.userName + ", What would you like me to add to your to do list?");
+    },
+    // Step 3 - Confirm what they want to add
+    function (session, results) {
+        session.dialogData.newToDo = results.response;
+        builder.Prompts.confirm(session, "So you want to add " + session.dialogData.newToDo + " to " + session.userData.userName + "'s to do list. Is that right?");
+    },
+    function (session, results) {
+        console.log(results.response);
+        if (results.response) {
+            
+            console.log("user wants to add a todo");
+            session.endDialog("Ok, adding...");
+
+        }else {
+            
+            // answer was no
+            session.endDialog("OK. How else can I help you?");
+            
+        }
+    }
+
+
+]).triggerAction({
+    // map this dialog to the addToDo intent 
+    matches: 'addToDo'
+});
+
+// dialog to process showToDo intent
+bot.dialog('showToDo',  [
+    // Step 1 - Confirm that they want to see their list
+    function (session) {
+        builder.Prompts.confirm(session, 'Sure! would you like me to show you your to do list?');
+    },
+    function (session, results) {
+        console.log(results.response);
+        if (results.response) {
+
+
+            if (session.userData.userName) {
+
+                console.log("user is already known", session.userData.userName);
+
+            }else {
+
+                console.log("user is not known");
+            }
+            
+            console.log("user wants to see the todo");
+            session.endDialog("OK, showing list...");
+        }else {
+            
+            // answer was no
+            session.endDialog("OK. How else can I help you?");
+            
+        }
+    }
+
+
+]).triggerAction({
+    // map this dialog to the showToDo intent 
+    matches: 'showToDo'
 });
 
 
