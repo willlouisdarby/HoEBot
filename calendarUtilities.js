@@ -1,5 +1,4 @@
 // necessary libraries
-require('ical-date-parser');
 var Promise = require('bluebird');
 var ical = require('ical');
 
@@ -18,53 +17,31 @@ module.exports = {
 
 				// loops through the different objects in the calendar
 	      		for (var k in data){
+
 		        	if (data.hasOwnProperty(k)) { 
 		        		
 		        		// ev is the current object (event)
 		          		var ev = data[k]
 		          		// summary is the name of the object
 		          		var summary = '' + ev.summary;
-		          		// if the date string is longer than 8
-		         		if (ev.start.length > 8) {
-			            	// this has a date and a time
-			            	//eg 20170905T12451445
-
-							var jsStartDate = iCalDateParser(ev.start);
-							var jsEndDate = iCalDateParser(ev.end);
- 
-							// converts the JS date objects to a string
-							 
-							var startDate = jsStartDate.getDay() + '-' + jsStartDate.getMonth() + '-' + jsStartDate.getFullYear();
-							var EndDate = jsEndDate.getDay() + '-' + jsEndDate.getMonth() + '-' + jsEndDate.getFullYear();
-							 
-							// put the string back into the object
-							ev.start = startDate;
-							ev.end = EndDate;
- 
-						} else {
-            				// this is just the date
-							// eg start:20170905
-							var jsStartDate = ev.start.toString();
-							// get all the parts of the date from the string
-                   			var y = jsStartDate.substr(0,4),
-                            	m = jsStartDate.substr(4,2),
-                            	d = jsStartDate.substr(6,2);
-		                	// convert into a js date object
-		                	var startDateObj = new Date(y,m,d);
-
-							// turn the object into a string
-							var startDate = startDateObj.getDay() + '-' + startDateObj.getMonth() + '-' + startDateObj.getFullYear();
- 
-				            // put the string back into the object
-				            ev.start = startDate;
-						}
+		          		
 						// switch case statement to work out what the intent is
 		         		switch (typeOfDate) {
+
+		         			case 'parentsEvening':
+		         				// serach for summary: 'INSET Day'
+		         				if(summary.search("Parent") >= 0 && summary.search("Evening") >= 0) {
+		         					// adds the event to the list
+		         					getTheDates(ev);
+		         					recordsFound.push(ev);
+		         				}
+		         			break;
 
 		         			case 'inset':
 		         				// serach for summary: 'INSET Day'
 		         				if(summary.search("INSET") >= 0) {
 		         					// adds the event to the list
+		         					getTheDates(ev);
 		         					recordsFound.push(ev);
 		         				}
 		         			break;
@@ -73,6 +50,7 @@ module.exports = {
 		         				// serach for summary: 'INSET Day'
 		         				if(summary.search("Term") >= 0 && summary.search("Start") >= 0) {
 		         					// adds the event to the list
+		         					getTheDates(ev);
 		         					recordsFound.push(ev);
 		         				}
 		         			break;
@@ -81,6 +59,7 @@ module.exports = {
 		         				// serach for summary: 'INSET Day'
 		         				if(summary.search("Term") >= 0 && summary.search("End") >= 0) {
 		         					// adds the event to the list
+		         					getTheDates(ev);
 		         					recordsFound.push(ev);
 		         				}
 		         			break;
@@ -95,4 +74,72 @@ module.exports = {
         });
     }
 }
+
+
+function getTheDates(ev){
+
+	
+	console.log ('getTheDates ev:', ev);
+
+	console.log ('getTheDates ev.start:', ev.start);
+
+	console.log ('getTheDates ev.start.length:', ev.start.toString().length);
+
+
+	// if the date string is longer than 8
+	if (ev.start.toString().length > 8) {
+
+
+		// this has a date and a time
+		//eg 20170905T12451445
+
+		// set the options to format the date
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
+		var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+
+
+
+		var startDateObj = new Date(ev.start.toString());
+		var endDateObj = new Date(ev.end.toString());
+		
+		console.log('calendar startDateObj:', startDateObj.toLocaleDateString('en-GB', options));
+
+		 
+		// put the string back into the object
+		ev.start = startDateObj.toLocaleDateString('en-GB', options);
+		ev.end = endDateObj.toLocaleDateString('en-GB', options);
+
+	} else {
+		
+		console.log('getTheDates for:', ev.summary);	
+
+		// this is just the date
+		// eg start:20170905
+		var jsStartDate = ev.start.toString();
+
+		// set the options to format the date
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
+		var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+		// get all the parts of the date from the string
+		var y = parseInt(jsStartDate.substr(0,4)),
+	    m = parseInt(jsStartDate.substr(4,2)),
+	    d = parseInt(jsStartDate.substr(6,2));
+
+	    
+	    // JS Date objects - month starts at zero so take 1 from the month
+	    m = m - 1;
+	    
+		// convert into a js date object
+		var startDateObj = new Date(y,m,d);
+		console.log('calendar startDateObj:', startDateObj.toLocaleDateString('en-GB', options));
+
+	    // put the string back into the object
+	    ev.start = startDateObj.toLocaleDateString('en-GB', options);
+	}
+
+
+}
+
+
 

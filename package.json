@@ -22,12 +22,12 @@
   },
   "dependencies": {
     "bluebird": "^3.5.1",
-    "botbuilder": "^3.11.0",
+    "botbuilder": "^3.13.1",
     "dotenv-extended": "^1.0.4",
     "ical": "^0.5.0",
     "ical-date-parser": "^4.0.0",
     "request": "^2.83.0",
-    "restify": "^4.3.1",
+    "restify": "^4.3.2",
     "sprintf-js": "^1.1.1",
     "sqlite3": "^3.1.13"
   }
